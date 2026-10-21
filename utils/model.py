@@ -54,9 +54,6 @@ class AdvancedCRNN(nn.Module):
         # Вместо жесткого сжатия до seq_len мы сначала аккуратно убираем высоту до 1
         self.height_pool = nn.AdaptiveAvgPool2d((1, 35)) 
 
-        # Добавляем обучаемый линейный слой, который сожмет 35 шагов в нужные seq_len (5)
-        self.proj = nn.Linear(35, seq_len)
-
         # Двунаправленная RNN (Bi-LSTM) для захвата контекста слева-направо и справа-налево
         self.rnn = nn.LSTM(
             input_size=512, 
@@ -81,19 +78,17 @@ class AdvancedCRNN(nn.Module):
         pooled = self.height_pool(conv_out) 
 
         # Убираем лишнюю единичную ось высоты: (B, 512, 35)
-        rnn_in = pooled.squeeze(2)
-        
-        # Обучаемая проекция шкалы времени: (B, 512, 35) -> (B, 512, 5)
-        rnn_in = self.proj(rnn_in)
-        
-        # Меняем оси местами под формат ожидания LSTM: (B, 5, 512)
-        rnn_in = rnn_in.permute(0, 2, 1) 
+        rnn_in = pooled.squeeze(2).permute(0, 2, 1)
         
         # Проход через рекуррентные слои: (B, 5, 512) -> (B, 5, 512)
         rnn_out, _ = self.rnn(rnn_in)        
         
         # Классификация каждого временного шага: (B, 5, 512) -> (B, 5, NUM_CLASSES)
-        logits = self.fc(rnn_out)               
+        logits = self.fc(rnn_out)   
+        
+        # Сжатие времени ПОСЛЕ классификации: блок из 7 колонок -> 1 символ
+        b = logits.size(0)
+        logits = logits.view(b, self.seq_len, 35 // self.seq_len, -1).mean(dim=2)              
         
         return logits
 
