@@ -23,7 +23,7 @@ DL project/
 │   └── analytics.py        # Статистический анализ ошибок
 ├── weights/
 │   └── best_model.pth      # Файл весов лучшей обученной модели
-├── captcha_ocr.ipynb                  # Ноутбук (обучение + пост-анализ), запуск на CPU
+├── captcha_ocr.ipynb                  # Ноутбук (обучение + пост-анализ), запуск на CPU, запускался до обновления эпох и lr=0.001
 ├── captcha_ocr_GoogleColab.ipynb      # Ноутбук (обучение + пост-анализ), запуск на Google Colab
 └── README.md               # Документация проекта
 
