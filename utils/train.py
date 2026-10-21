@@ -86,7 +86,7 @@ def main():
     criterion = nn.CrossEntropyLoss(ignore_index=config.PAD_TOKEN)
     optimizer = optim.Adam(model.parameters(), lr=config.LEARNING_RATE)
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(
-        optimizer, mode='min', patience=3, factor=0.5
+        optimizer, mode='min', patience=5 factor=0.5
     )
     
     best_cer = 1.0
@@ -103,7 +103,7 @@ def main():
         
         train_loss, train_cer = train_epoch(model, train_loader, criterion, optimizer, device)
         val_loss, val_cer, val_acc = evaluate(model, test_loader, criterion, device)
-        
+        print(f"  LR: {optimizer.param_groups[0]['lr']:.2e}") 
         scheduler.step(val_loss)
         
         # Сохраняем метрики в историю обучения
